@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-site
+  template:
+    metadata:
+        labels:
+          app: web-site
+    spec:
+      containers:
+      - name: my-web-site
+        image: nginx
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+# service type loadbalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-site-svc
+spec:
+  selector:
+    app: web-site
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nweb-site-svc
+spec:
+  rules:
+  - host: challenge.kevin-rivera.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: web-site-svc
+            port:
+              number: 80
